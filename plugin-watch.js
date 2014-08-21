@@ -27,11 +27,17 @@
         {
             "packageName": "plugin-watch",
             "fileName": "plugin-watch.js",
+            "pluginTypeList": [
+                "polyfill",
+                "support",
+                "backward-compatibility"
+            ],
             "pluginName": "watch",
-            "pluginAttachment": {
+            "pluginAttachmentSet": {
                 "Object.prototype": "watch",
                 "window": "watchFactory"
             },
+            "pluginOverride": "Object.prototype.watch",
             "authorName": "Richeve S. Bebedor",
             "authorEMail": "richeve.bebedor@gmail.com",
             "repository": "git@github.com:volkovasystems/plugin-watch.git",
