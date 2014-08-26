@@ -163,7 +163,7 @@
 				while(
 					index < propertyHandlerListLength &&
 					propertyHandlerList[ index ].toString( ) != propertyHandler.toString( ) &&
-					propertyHandlerList[ index ] != propertyHandler
+					propertyHandlerList[ index ] !== propertyHandler
 				);
 				if( index >= propertyHandlerListLength ){
 					propertyHandlerList.push( propertyHandler );
@@ -178,7 +178,7 @@
 				index = 0;
 				while(
 					index < valueHistoryStackSize &&
-					valueHistoryStack[ index ] != propertyValue
+					valueHistoryStack[ index ] !== propertyValue
 				);
 				if( index >= valueHistoryStackSize ){
 					valueHistoryStack.push( propertyValue );
