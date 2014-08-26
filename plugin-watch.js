@@ -236,8 +236,8 @@
 					var watcherSetter = setter;
 					if( typeof previousSetter == "function" ){
 						watcherSetter = function set( value ){
-							var previousSetterValue = previousSetter.call( self, value );
-							var setterValue = setter.call( self, value );
+							previousSetter.call( self, value );
+							setter.call( self, value );
 						};
 					}
 
