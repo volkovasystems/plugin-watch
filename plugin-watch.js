@@ -182,6 +182,19 @@
 
 				//: We will use the property descriptor as a template.
 				var propertyDescriptorSet = Object.getOwnPropertyDescriptor( self, propertyName );
+				/*:
+					Set a default property descriptor set.
+
+					NOTE: that I set configurable to true so that the developers may have ability to remove the watch.
+				*/
+				propertyDescriptorSet = propertyDescriptorSet || {
+					"value": null,
+					"get": null,
+					"set": null,
+					"enumerable": true,
+					"configurable": true,
+					"writable": true
+				};
 
 				//: But remove the value.
 				delete propertyDescriptorSet.value;
