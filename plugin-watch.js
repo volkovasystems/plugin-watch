@@ -251,6 +251,18 @@
 
 					Object.defineProperty( self, propertyName, propertyDescriptorSet );
 				}
+
+				if( typeof executeWatcherImmediately == "boolean" &&
+					executeWatcherImmediately )
+				{
+					propertyHandler.call( self, propertyValue, propertyValue );
+				}
+
+				if( typeof initiateIntervalMonitoring == "boolean" &&
+					initiateIntervalMonitoring )
+				{
+					initiateIntervalMonitor.call( watchFactory, self, propertyName, propertyHandler );
+				}
 			}
 
 			return watch;
