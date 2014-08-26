@@ -101,9 +101,46 @@
 			return btoa( Math.round( Date.now( ) + Math.random( ) * Date.now( ) ).toString( ) ).toString( ).replace( /[^A-Ba-b0-9]/g, "" );
 		};
 
+		var initiateIntervalMonitor = function initiateIntervalMonitor( self, propertyName, propertyHandler ){
+			this.intervalEngineSet = this.intervalEngineSet || { };
+			var intervalEngineSet = this.intervalEngineSet;
+
+			var intervalNamespace = self.constructor.name;
+
+			var intervalEngineList = intervalEngineSet[ intervalNamespace ] || [ ];
+			intervalEngineSet[ intervalNamespace ] = intervalEngineList;
+
+			var dataSet = { };
+			self.watch( propertyName,
+				function intervalDataHandler( newValue, oldValue ){
+					dataSet.newValue = newValue;
+					dataSet.oldValue = oldValue;
+				}, false, true );
+
+			intervalEngineList.push( function intervalHandler( ){
+				if( dataSet.newValue !== dataSet.oldValue ||
+					self[ propertyName ] !== dataSet.oldValue )
+				{
+					propertyHandler.call( self, dataSet.newValue, dataSet.oldValue );
+				}
+			} );
+
+			if( !( "engine" in intervalEngineList ) ){
+				intervalEngineList.engine = setInterval( function onInterval( ){
+					var intervalEngine = null;
+
+					var intervalEngineListLength = intervalEngineList.length;
+					for( var index = 0; index < intervalEngineListLength; index++ ){
+						intervalEngine = intervalEngineList[ index ];
+						intervalEngine( );
+					}
+				}, 100 );
+			}
+		};
+
 		var watchFactory = watchFactory || function watchFactory( ){
 
-			var watch = function watch( propertyName, propertyHandler ){
+			var watch = function watch( propertyName, propertyHandler, initiateIntervalMonitoring, executeWatcherImmediately ){
 
 				var self = this;
 
