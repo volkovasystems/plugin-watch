@@ -187,15 +187,14 @@
 
 					NOTE: I set configurable to true so that the developers may have ability to remove the watch.
 
-					NOTE: I set the writable to false because the presence of get and set has issues when writable is true.
+					NOTE: I removed writable because the presence of get and set has issues when writable is present.
 				*/
 				propertyDescriptorSet = propertyDescriptorSet || {
 					"value": null,
 					"get": { },
 					"set": { },
 					"enumerable": true,
-					"configurable": true,
-					"writable": false
+					"configurable": true
 				};
 
 				//: But remove the value.
