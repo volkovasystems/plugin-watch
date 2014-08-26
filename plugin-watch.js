@@ -185,7 +185,9 @@
 				/*:
 					Set a default property descriptor set.
 
-					NOTE: that I set configurable to true so that the developers may have ability to remove the watch.
+					NOTE: I set configurable to true so that the developers may have ability to remove the watch.
+
+					NOTE: I set the writable to false because the presence of get and set has issues when writable is true.
 				*/
 				propertyDescriptorSet = propertyDescriptorSet || {
 					"value": null,
@@ -193,7 +195,7 @@
 					"set": { },
 					"enumerable": true,
 					"configurable": true,
-					"writable": true
+					"writable": false
 				};
 
 				//: But remove the value.
