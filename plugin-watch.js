@@ -189,8 +189,8 @@
 				*/
 				propertyDescriptorSet = propertyDescriptorSet || {
 					"value": null,
-					"get": null,
-					"set": null,
+					"get": { },
+					"set": { },
 					"enumerable": true,
 					"configurable": true,
 					"writable": true
