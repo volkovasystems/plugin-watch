@@ -1,244 +1,248 @@
 /*:
-    @module-license:
-        The MIT License (MIT)
+	@module-license:
+		The MIT License (MIT)
 
-        Copyright (c) 2014 Richeve Siodina Bebedor
+		Copyright (c) 2014 Richeve Siodina Bebedor
 
-        Permission is hereby granted, free of charge, to any person obtaining a copy
-        of this software and associated documentation files (the "Software"), to deal
-        in the Software without restriction, including without limitation the rights
-        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-        copies of the Software, and to permit persons to whom the Software is
-        furnished to do so, subject to the following conditions:
+		Permission is hereby granted, free of charge, to any person obtaining a copy
+		of this software and associated documentation files (the "Software"), to deal
+		in the Software without restriction, including without limitation the rights
+		to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+		copies of the Software, and to permit persons to whom the Software is
+		furnished to do so, subject to the following conditions:
 
-        The above copyright notice and this permission notice shall be included in all
-        copies or substantial portions of the Software.
+		The above copyright notice and this permission notice shall be included in all
+		copies or substantial portions of the Software.
 
-        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-        SOFTWARE.
-    @end-module-license
+		THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+		IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+		FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+		AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+		LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+		OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+		SOFTWARE.
+	@end-module-license
 
-    @module-configuration:
-        {
-            "packageName": "plugin-watch",
-            "fileName": "plugin-watch.js",
-            "moduleType": "plugin",
-            "authorName": "Richeve S. Bebedor",
-            "authorEMail": "richeve.bebedor@gmail.com",
-            "repository": "git@github.com:volkovasystems/plugin-watch.git",
-            "isGlobal": "true"
-        }
-    @end-module-configuration
+	@module-configuration:
+		{
+			"packageName": "plugin-watch",
+			"fileName": "plugin-watch.js",
+			"moduleType": "plugin",
+			"authorName": "Richeve S. Bebedor",
+			"authorEMail": "richeve.bebedor@gmail.com",
+			"repository": "git@github.com:volkovasystems/plugin-watch.git",
+			"isGlobal": "true"
+		}
+	@end-module-configuration
 
-    @module-documentation:
+	@module-documentation:
 
-    @end-module-documentation
+	@end-module-documentation
 
-    @plugin-configuration:
-        {
-            "pluginName": "watch",
-            "pluginTypeList": [
-                "polyfill",
-                "support",
-                "backward-compatibility"
-            ],
-            "pluginAttachmentSet": {
-                "Object.prototype": "watch",
-                "window": "watchFactory"
-            },
-            "pluginOverride": "Object.prototype.watch"
-        }
-    @end-plugin-configuration
+	@plugin-configuration:
+		{
+			"pluginName": "watch",
+			"pluginTypeList": [
+				"polyfill",
+				"support",
+				"backward-compatibility"
+			],
+			"pluginAttachmentSet": {
+				"Object.prototype": "watch",
+				"window": "watchFactory"
+			},
+			"pluginOverride": "Object.prototype.watch"
+		}
+	@end-plugin-configuration
 */
 ( function module( ){
-    if( !Object.prototype.watch ){
-        var getterFactory = function getterFactory( self, property, valueHistoryStack ){
-            var get = function get( ){
-                return valueHistoryStack.reverse( )[ 0 ];
-            };
+	if( !Object.prototype.watch ){
+		var getterFactory = function getterFactory( self, property, valueHistoryStack ){
+			var get = function get( ){
+				return valueHistoryStack.reverse( )[ 0 ];
+			};
 
-            Object.defineProperty( get, "watcherID", {
-                "configurable": false,
-                "writable": false,
-                "enumerable": false,
-                "value": self.watcherID
-            } );
+			Object.defineProperty( get, "watcherID", {
+				"configurable": false,
+				"writable": false,
+				"enumerable": false,
+				"value": self.watcherID
+			} );
 
-            return get;
-        };
+			return get;
+		};
 
-        var setterFactory = function setterFactory( self, property, propertyHandlerList, valueHistoryStack ){
-            var set = function set( value ){
-                valueHistoryStack.push( value );
+		var setterFactory = function setterFactory( self, property, propertyHandlerList, valueHistoryStack ){
+			var set = function set( value ){
+				valueHistoryStack.push( value );
 
-                var propertyHandler = null;
-                var previousValue = undefined;
+				var propertyHandler = null;
+				var previousValue = undefined;
 
-                var propertyHandlerListLength = propertyHandlerList.length;
-                for( var index = 0; index < propertyHandlerListLength; index++ ){
-                    propertyHandler = propertyHandlerList[ index ];
-                    previousValue = valueHistoryStack.reverse( )[ 1 ];
-                    propertyHandler.call( self, value, previousValue );
-                }
-            };
+				var propertyHandlerListLength = propertyHandlerList.length;
+				for( var index = 0; index < propertyHandlerListLength; index++ ){
+					propertyHandler = propertyHandlerList[ index ];
+					previousValue = valueHistoryStack.reverse( )[ 1 ];
+					propertyHandler.call( self, value, previousValue );
+				}
+			};
 
-            Object.defineProperty( set, "watcherID", {
-                "configurable": false,
-                "writable": false,
-                "enumerable": false,
-                "value": self.watcherID
-            } );
+			Object.defineProperty( set, "watcherID", {
+				"configurable": false,
+				"writable": false,
+				"enumerable": false,
+				"value": self.watcherID
+			} );
 
-            return set;
-        };
+			return set;
+		};
 
-        var watchFactory = watchFactory || function watchFactory( ){
+		var generateWatcherID = function generateWatcherID( ){
+			return btoa( Math.round( Date.now( ) + Math.random( ) * Date.now( ) ).toString( ) ).toString( ).replace( /[^A-Ba-b0-9]/g, "" );
+		};
 
-            var watch = function watch( propertyName, propertyHandler ){
+		var watchFactory = watchFactory || function watchFactory( ){
 
-                var self = this;
+			var watch = function watch( propertyName, propertyHandler ){
 
-                //: Extract the property value for enumerable and non enumerable properties.
-                var propertyValue;
-                if( propertyName in self ||
-                    typeof self[ propertyName ] != "undefined" )
-                {
-                    propertyValue = self[ propertyName ];
-                }
+				var self = this;
 
-                //: Generate or extract the watcher id.
-                var watcherID = self.watcherID;
-                if( typeof watcherID != "string" ){
-                    Object.defineProperty( self, "watcherID", {
-                        "configurable": false,
-                        "writable": false,
-                        "enumerable": false,
-                        "value": btoa( Math.round( Date.now( ) + Math.random( ) * Date.now( ) ) )
-                    } );
+				//: Extract the property value for enumerable and non enumerable properties.
+				var propertyValue;
+				if( propertyName in self ||
+					typeof self[ propertyName ] != "undefined" )
+				{
+					propertyValue = self[ propertyName ];
+				}
 
-                    watcherID = self.watcherID;
-                }
+				//: Generate or extract the watcher id.
+				var watcherID = self.watcherID;
+				if( typeof watcherID != "string" ){
+					Object.defineProperty( self, "watcherID", {
+						"configurable": false,
+						"writable": false,
+						"enumerable": false,
+						"value": generateWatcherID( )
+					} );
 
-                //: Create a watcher set for all the watchers.
-                watchFactory.watcherSet = watchFactory.watcherSet || { };
-                var watcherSet = watchFactory.watcherSet;
+					watcherID = self.watcherID;
+				}
 
-                /*:
-                 Combine the property name and watcher ID to create the watcher namespace.
-                 Watcher namespace is per object per property.
-                 */
-                var watcherNamespace = [ watcherID, propertyName ].join( ":" );
+				//: Create a watcher set for all the watchers.
+				watchFactory.watcherSet = watchFactory.watcherSet || { };
+				var watcherSet = watchFactory.watcherSet;
 
-                //: Construct watcher data or extract the previous watcher data.
-                var watcherData = watcherSet[ watcherNamespace ];
-                if( typeof watcherData != "object" ){
-                    Object.defineProperty( watcherSet, watcherNamespace, {
-                        "configurable": false,
-                        "writable": false,
-                        "enumerable": false,
-                        "value": {
-                            "propertyHandlerList": [ ],
-                            "valueHistoryStack": [ ]
-                        }
-                    } );
+				/*:
+					Combine the property name and watcher ID to create the watcher namespace.
+					Watcher namespace is per object per property.
+				*/
+				var watcherNamespace = [ watcherID, propertyName ].join( ":" );
 
-                    watcherData = watcherSet[ watcherNamespace ];
-                }
+				//: Construct watcher data or extract the previous watcher data.
+				var watcherData = watcherSet[ watcherNamespace ];
+				if( typeof watcherData != "object" ){
+					Object.defineProperty( watcherSet, watcherNamespace, {
+						"configurable": false,
+						"writable": false,
+						"enumerable": false,
+						"value": {
+							"propertyHandlerList": [ ],
+							"valueHistoryStack": [ ]
+						}
+					} );
 
-                var propertyHandlerList = watcherData.propertyHandlerList;
-                var valueHistoryStack = watcherData.valueHistoryStack;
+					watcherData = watcherSet[ watcherNamespace ];
+				}
 
-                //: Push property handler if it is not the same with other property handlers.
-                var propertyHandlerListLength = propertyHandlerList.length;
-                var index = 0;
-                while(
-                    propertyHandlerList[ index ].toString( ) != propertyHandler.toString( ) &&
-                        propertyHandlerList[ index ] != propertyHandler &&
-                        index < propertyHandlerListLength
-                    );
-                if( index >= propertyHandlerListLength ){
-                    propertyHandlerList.push( propertyHandler );
-                }
+				var propertyHandlerList = watcherData.propertyHandlerList;
+				var valueHistoryStack = watcherData.valueHistoryStack;
 
-                //: Push the property value if it is not the same with other property value.
-                var valueHistoryStackSize = valueHistoryStack.length;
-                index = 0;
-                while(
-                    valueHistoryStack[ index ] != propertyValue &&
-                        index < valueHistoryStackSize
-                    );
-                if( index >= valueHistoryStackSize ){
-                    valueHistoryStack.push( propertyValue );
-                }
+				//: Push property handler if it is not the same with other property handlers.
+				var propertyHandlerListLength = propertyHandlerList.length;
+				var index = 0;
+				while(
+					propertyHandlerList[ index ].toString( ) != propertyHandler.toString( ) &&
+						propertyHandlerList[ index ] != propertyHandler &&
+						index < propertyHandlerListLength
+					);
+				if( index >= propertyHandlerListLength ){
+					propertyHandlerList.push( propertyHandler );
+				}
 
-                //: We will use the property descriptor as a template.
-                var propertyDescriptorSet = Object.getOwnPropertyDescriptor( self, propertyName );
+				//: Push the property value if it is not the same with other property value.
+				var valueHistoryStackSize = valueHistoryStack.length;
+				index = 0;
+				while(
+					valueHistoryStack[ index ] != propertyValue &&
+						index < valueHistoryStackSize
+					);
+				if( index >= valueHistoryStackSize ){
+					valueHistoryStack.push( propertyValue );
+				}
 
-                //: But remove the value.
-                delete propertyDescriptorSet.value;
+				//: We will use the property descriptor as a template.
+				var propertyDescriptorSet = Object.getOwnPropertyDescriptor( self, propertyName );
 
-                //: Retrieve the previous getter and setter if there are.
-                var previousGetter = propertyDescriptorSet.get;
-                var previousSetter = propertyDescriptorSet.set;
+				//: But remove the value.
+				delete propertyDescriptorSet.value;
 
-                //: And delete them if there are.
-                if( typeof previousGetter == "function" &&
-                    typeof previousSetter == "function" )
-                {
-                    delete propertyDescriptorSet.get;
-                    delete propertyDescriptorSet.set;
-                }
+				//: Retrieve the previous getter and setter if there are.
+				var previousGetter = propertyDescriptorSet.get;
+				var previousSetter = propertyDescriptorSet.set;
 
-                if( !( "watcherID" in previousGetter &&
-                    "watcherID" in previousSetter ) )
-                {
-                    var getter = getterFactory( self, propertyName, valueHistoryStack );
-                    var setter = setterFactory( self, propertyName, propertyHandlerList, valueHistoryStack );
+				//: And delete them if there are.
+				if( typeof previousGetter == "function" &&
+					typeof previousSetter == "function" )
+				{
+					delete propertyDescriptorSet.get;
+					delete propertyDescriptorSet.set;
+				}
 
-                    var watcherGetter = getter;
-                    if( typeof previousGetter == "function" ){
-                        watcherGetter = function get( ){
-                            var previousGetterValue = previousGetter.call( self );
-                            var getterValue = getter.call( self );
+				if( !( "watcherID" in previousGetter &&
+					"watcherID" in previousSetter ) )
+				{
+					var getter = getterFactory( self, propertyName, valueHistoryStack );
+					var setter = setterFactory( self, propertyName, propertyHandlerList, valueHistoryStack );
 
-                            if( previousGetterValue === getterValue ){
-                                return previousGetterValue;
+					var watcherGetter = getter;
+					if( typeof previousGetter == "function" ){
+						watcherGetter = function get( ){
+							var previousGetterValue = previousGetter.call( self );
+							var getterValue = getter.call( self );
 
-                            }else{
-                                return getterValue;
-                            }
-                        };
-                    }
+							if( previousGetterValue === getterValue ){
+								return previousGetterValue;
 
-                    var watcherSetter = setter;
-                    if( typeof previousSetter == "function" ){
-                        watcherSetter = function set( value ){
-                            var previousSetterValue = previousSetter.call( self, value );
-                            var setterValue = setter.call( self, value );
-                        };
-                    }
+							}else{
+								return getterValue;
+							}
+						};
+					}
 
-                    propertyDescriptorSet.get = watcherGetter;
-                    propertyDescriptorSet.set = watcherSetter;
+					var watcherSetter = setter;
+					if( typeof previousSetter == "function" ){
+						watcherSetter = function set( value ){
+							var previousSetterValue = previousSetter.call( self, value );
+							var setterValue = setter.call( self, value );
+						};
+					}
 
-                    Object.defineProperty( self, propertyName, propertyDescriptorSet );
-                }
-            }
+					propertyDescriptorSet.get = watcherGetter;
+					propertyDescriptorSet.set = watcherSetter;
 
-            return watch;
-        };
-        window.watchFactory = watchFactory;
+					Object.defineProperty( self, propertyName, propertyDescriptorSet );
+				}
+			}
 
-        Object.defineProperty( Object.prototype, "watch", {
-            "enumerable": false,
-            "configurable": false,
-            "writable": false,
-            "value": watchFactory( )
-        } );
-    }
+			return watch;
+		};
+		window.watchFactory = watchFactory;
+
+		Object.defineProperty( Object.prototype, "watch", {
+			"enumerable": false,
+			"configurable": false,
+			"writable": false,
+			"value": watchFactory( )
+		} );
+	}
 } )( );
