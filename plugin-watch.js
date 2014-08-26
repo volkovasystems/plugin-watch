@@ -83,7 +83,7 @@
 				for( var index = 0; index < propertyHandlerListLength; index++ ){
 					propertyHandler = propertyHandlerList[ index ];
 					previousValue = valueHistoryStack.reverse( )[ 1 ];
-					propertyHandler.call( self, value, previousValue );
+					propertyHandler.call( self.valueOf( ), value, previousValue );
 				}
 			};
 
@@ -138,31 +138,69 @@
 			}
 		};
 
+		var resolveSelf = function resolveSelf( self ){
+			var selfCache = { };
+
+			var getSelfValue = function getSelfValue( ){
+				var selfValue = self.valueOf( );
+
+				for( var key in selfValue ){
+					selfCache[ key ] = selfValue[ key ];
+				}
+
+				var nonEnumerableKeyList = Object.getOwnPropertyNames( self.valueOf( ) );
+				var nonEnumerableKeyListLength = nonEnumerableKeyList.length;
+				for( var index = 0; index < nonEnumerableKeyListLength; index++ ){
+					key = nonEnumerableKeyList[ index ];
+					try{
+						selfCache[ key ] = self.valueOf( )[ key ];
+
+					}catch( error ){
+						console.warn( "error encountered syncing property: " + key );
+						console.warn( "note that this error is not fatal and just for debugging purposes only" );
+						console.error( error );
+					}
+				}
+
+				selfCache.valueOf = function valueOf( ){
+					return self.valueOf( );
+				};
+
+				return selfCache;
+			};
+
+			getSelfValue.valueOf = function valueOf( ){
+				return self.valueOf( );
+			};
+
+			return getSelfValue;
+		};
+
 		var watchFactory = watchFactory || function watchFactory( ){
 
 			var watch = function watch( propertyName, propertyHandler, initiateIntervalMonitoring, executeWatcherImmediately ){
 
-				var self = this;
+				var self = resolveSelf( this );
 
 				//: Extract the property value for enumerable and non enumerable properties.
 				var propertyValue;
-				if( propertyName in self ||
-					typeof self[ propertyName ] != "undefined" )
+				if( propertyName in self.valueOf( ) ||
+					typeof self.valueOf( )[ propertyName ] != "undefined" )
 				{
-					propertyValue = self[ propertyName ];
+					propertyValue = self.valueOf( )[ propertyName ];
 				}
 
 				//: Generate or extract the watcher id.
-				var watcherID = self.watcherID;
+				var watcherID = self( ).watcherID;
 				if( typeof watcherID != "string" ){
-					Object.defineProperty( self, "watcherID", {
+					Object.defineProperty( self.valueOf( ), "watcherID", {
 						"configurable": false,
 						"writable": false,
 						"enumerable": false,
 						"value": generateWatcherID( )
 					} );
 
-					watcherID = self.watcherID;
+					watcherID = self( ).watcherID;
 				}
 
 				//: Create a watcher set for all the watchers.
@@ -222,7 +260,7 @@
 				}
 
 				//: We will use the property descriptor as a template.
-				var propertyDescriptorSet = Object.getOwnPropertyDescriptor( self, propertyName );
+				var propertyDescriptorSet = Object.getOwnPropertyDescriptor( self( ), propertyName );
 				/*:
 					Set a default property descriptor set because getOwnPropertyDescriptor may return undefined.
 
@@ -260,14 +298,14 @@
 				if( !( "watcherID" in previousGetter &&
 					"watcherID" in previousSetter ) )
 				{
-					var getter = getterFactory( self, propertyName, valueHistoryStack );
-					var setter = setterFactory( self, propertyName, propertyHandlerList, valueHistoryStack );
+					var getter = getterFactory( self( ), propertyName, valueHistoryStack );
+					var setter = setterFactory( self( ), propertyName, propertyHandlerList, valueHistoryStack );
 
 					var watcherGetter = getter;
 					if( typeof previousGetter == "function" ){
 						watcherGetter = function get( ){
-							var previousGetterValue = previousGetter.call( self );
-							var getterValue = getter.call( self );
+							var previousGetterValue = previousGetter.call( self( ) );
+							var getterValue = getter.call( self( ) );
 
 							if( previousGetterValue === getterValue ){
 								return previousGetterValue;
@@ -281,27 +319,27 @@
 					var watcherSetter = setter;
 					if( typeof previousSetter == "function" ){
 						watcherSetter = function set( value ){
-							previousSetter.call( self, value );
-							setter.call( self, value );
+							previousSetter.call( self( ), value );
+							setter.call( self( ), value );
 						};
 					}
 
 					propertyDescriptorSet.get = watcherGetter;
 					propertyDescriptorSet.set = watcherSetter;
 
-					Object.defineProperty( self, propertyName, propertyDescriptorSet );
+					Object.defineProperty( self.valueOf( ), propertyName, propertyDescriptorSet );
 				}
 
 				if( typeof executeWatcherImmediately == "boolean" &&
 					executeWatcherImmediately )
 				{
-					propertyHandler.call( self, propertyValue, propertyValue );
+					propertyHandler.call( self.valueOf( ), propertyValue, propertyValue );
 				}
 
 				if( typeof initiateIntervalMonitoring == "boolean" &&
 					initiateIntervalMonitoring )
 				{
-					initiateIntervalMonitor.call( watchFactory, self, propertyName, propertyHandler );
+					initiateIntervalMonitor.call( watchFactory, self.valueOf( ), propertyName, propertyHandler );
 				}
 			}
 
