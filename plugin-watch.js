@@ -161,10 +161,10 @@
 				var propertyHandlerListLength = propertyHandlerList.length;
 				var index = 0;
 				while(
+					index < propertyHandlerListLength &&
 					propertyHandlerList[ index ].toString( ) != propertyHandler.toString( ) &&
-						propertyHandlerList[ index ] != propertyHandler &&
-						index < propertyHandlerListLength
-					);
+					propertyHandlerList[ index ] != propertyHandler
+				);
 				if( index >= propertyHandlerListLength ){
 					propertyHandlerList.push( propertyHandler );
 				}
@@ -173,9 +173,9 @@
 				var valueHistoryStackSize = valueHistoryStack.length;
 				index = 0;
 				while(
-					valueHistoryStack[ index ] != propertyValue &&
-						index < valueHistoryStackSize
-					);
+					index < valueHistoryStackSize &&
+					valueHistoryStack[ index ] != propertyValue
+				);
 				if( index >= valueHistoryStackSize ){
 					valueHistoryStack.push( propertyValue );
 				}
