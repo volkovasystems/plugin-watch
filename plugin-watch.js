@@ -55,7 +55,7 @@
 		}
 	@end-plugin-configuration
 */
-( function( ){
+( function module( ){
 	if( !Object.prototype.watch ){
 		var getterFactory = function getterFactory( self, property, valueHistoryStack ){
 			var get = function get( ){
