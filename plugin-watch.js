@@ -169,7 +169,11 @@
 					propertyHandlerList.push( propertyHandler );
 				}
 
-				//: Push the property value if it is not the same with other property value.
+				/*:
+					Push the property value if it is not the same with other property value.
+
+					Because, there may be times that the value may be already an old value.
+				*/
 				var valueHistoryStackSize = valueHistoryStack.length;
 				index = 0;
 				while(
@@ -183,7 +187,7 @@
 				//: We will use the property descriptor as a template.
 				var propertyDescriptorSet = Object.getOwnPropertyDescriptor( self, propertyName );
 				/*:
-					Set a default property descriptor set.
+					Set a default property descriptor set because getOwnPropertyDescriptor may return undefined.
 
 					NOTE: I set configurable to true so that the developers may have ability to remove the watch.
 
@@ -212,6 +216,7 @@
 					delete propertyDescriptorSet.set;
 				}
 
+				//: If this entity has not been watched yet then we can attach the watcher.
 				if( !( "watcherID" in previousGetter &&
 					"watcherID" in previousSetter ) )
 				{
