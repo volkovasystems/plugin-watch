@@ -241,9 +241,12 @@
 				//: But remove the value.
 				delete propertyDescriptorSet.value;
 
+				//: Remove the writable if there are.
+				delete propertyDescriptorSet.writable;
+
 				//: Retrieve the previous getter and setter if there are.
-				var previousGetter = propertyDescriptorSet.get;
-				var previousSetter = propertyDescriptorSet.set;
+				var previousGetter = propertyDescriptorSet.get || { };
+				var previousSetter = propertyDescriptorSet.set || { };
 
 				//: And delete them if there are.
 				if( typeof previousGetter == "function" &&
